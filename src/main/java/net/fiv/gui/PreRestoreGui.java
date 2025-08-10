@@ -10,6 +10,8 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.*;
 
 @Setter
@@ -50,11 +52,15 @@ public class PreRestoreGui extends SimpleGui {
             String armor = this.preRestoreTableList.get(tableSize-i-1).getArmor();
             String offHand = this.preRestoreTableList.get(tableSize-i-1).getOffHand();
             String enderChest = this.preRestoreTableList.get(tableSize-i-1).getEnderChest();
+            String time = Instant.ofEpochMilli(this.preRestoreTableList.get(tableSize-i-1).getDate())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                    .toString();
             int xp = this.preRestoreTableList.get(tableSize-i-1).getXp();
             boolean isInventory = this.preRestoreTableList.get(tableSize-i-1).isTableType();
 
             this.setSlot(inventory_index, new GuiElementBuilder(isInventory ? Items.CHEST : Items.ENDER_CHEST)
-                    .setName(Text.literal("Time: "+this.preRestoreTableList.get(tableSize-i-1).getDate()))
+                    .setName(Text.literal("Time: "+time))
                     .addLoreLine(Text.literal("XpLevel: "+this.preRestoreTableList.get(tableSize-i-1).getXp()))
                     .setCallback((index, type, action) -> {
                         Map<Integer, ItemStack> itemStackList = TableListGui.inventorySerialization(inventory, armor, offHand, player);
@@ -73,25 +79,19 @@ public class PreRestoreGui extends SimpleGui {
         if (lastIndex < this.preRestoreTableList.size()) {
             this.setSlot(53, new GuiElementBuilder(Items.ARROW)
                     .setName(Text.literal("Next Page"))
-                    .setCallback((index, type, action) -> {
-                        new PreRestoreGui(player, page + 1, this.preRestoreTableList).open();
-                    })
+                    .setCallback((index, type, action) -> new PreRestoreGui(player, page + 1, this.preRestoreTableList).open())
                     .build());
         }
 
         this.setSlot(49, new GuiElementBuilder(Items.EMERALD)
                 .setName(Text.literal("Back to tables list"))
-                .setCallback((index, type, action) -> {
-                    new TableListGui(player, preRestoreTableList.getFirst().getName()).open();
-                })
+                .setCallback((index, type, action) -> new TableListGui(player, preRestoreTableList.getFirst().getName()).open())
                 .build());
 
         if (page > 0) {
             this.setSlot(45, new GuiElementBuilder(Items.ARROW)
                     .setName(Text.literal("Previous Page"))
-                    .setCallback((index, type, action) -> {
-                        new PreRestoreGui(player, page - 1, this.preRestoreTableList).open();
-                    })
+                    .setCallback((index, type, action) -> new PreRestoreGui(player, page - 1, this.preRestoreTableList).open())
                     .build());
         }
 //        System.out.println(TableListGui.activeTables);

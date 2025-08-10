@@ -2,23 +2,24 @@ package net.fiv.gui;
 
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.fiv.BorukvaInventoryBackup;
 import net.fiv.commands.GetInventoryHistoryCommand;
 import net.fiv.util.InventorySerializer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.*;
 import net.minecraft.registry.Registries;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class TableListGui extends SimpleGui {
 
@@ -57,9 +58,8 @@ public class TableListGui extends SimpleGui {
     }
 
     protected static Map<Integer, ItemStack> inventorySerialization(String inventory, String armor, String offHand, ServerPlayerEntity player){
-        World world = player.getWorld();
-
         Map<Integer, ItemStack> itemsToGive = new HashMap<>();
+        ServerWorld world= player.getWorld();
 
         NbtCompound nbtCompoundArmor = InventorySerializer.deserializeInventory(armor);
         //System.out.println("armor: "+armor);
@@ -75,7 +75,7 @@ public class TableListGui extends SimpleGui {
             //System.out.println("BLOCKTAG: "+itemNbt.getString("id")); //
             if(!itemNbt.getString("id").get().equals("minecraft:air")){
 
-                itemStack = ItemStack.fromNbt(world.getRegistryManager(), nbtElement).get();
+                itemStack = ItemStack.CODEC.parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt).getOrThrow();
 
             } else if(itemNbt.getString("id").get().equals("minecraft:air")){
                 itemStack = new ItemStack(Items.AIR);
@@ -103,7 +103,7 @@ public class TableListGui extends SimpleGui {
             //System.out.println("BLOCKTAG: "+itemNbt.getString("id")); //
             if(!itemNbt.getString("id").get().equals("minecraft:air")){
 
-                itemStack = ItemStack.fromNbt(world.getRegistryManager(), nbtElement).get();
+                itemStack = ItemStack.CODEC.parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt).getOrThrow();
             } else if(itemNbt.getString("id").get().equals("minecraft:air")){
                 itemStack = new ItemStack(Items.AIR);
 
@@ -129,7 +129,7 @@ public class TableListGui extends SimpleGui {
 
             //System.out.println("BLOCKTAG: "+itemNbt.getString("id")); //
             if(!itemNbt.getString("id").get().equals("minecraft:air")){
-                itemStack = ItemStack.fromNbt(world.getRegistryManager(), nbtElement).get();
+                itemStack = ItemStack.CODEC.parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt).getOrThrow();
             } else if(itemNbt.getString("id").get().equals("minecraft:air")){
                 itemStack = new ItemStack(Items.AIR);
 
@@ -145,35 +145,47 @@ public class TableListGui extends SimpleGui {
     }
 
     protected static Map<Integer, ItemStack> inventorySerialization(String enderChest, ServerPlayerEntity player) {
-        World world = player.getWorld();
+        try {
+            World world = player.getWorld();
 
-        Map<Integer, ItemStack> itemsToGive = new HashMap<>();
+            NbtCompound nbtCompound = InventorySerializer.deserializeInventory(enderChest);
+            NbtList inventoryList = nbtCompound
+                    .getList("Inventory")
+                    .orElseThrow(() -> new IllegalArgumentException("No Inventory tag found"));
 
-        NbtCompound nbtCompoundArmor = InventorySerializer.deserializeInventory(enderChest);
-        //System.out.println("armor: "+armor);
-        NbtList nbtListArmor = nbtCompoundArmor.getList("Inventory").get();
-        //System.out.println("NbtArmor "+ nbtListArmor.toString());
+            AtomicInteger index = new AtomicInteger(0);
 
-        int index = 0;
-        for (NbtElement nbtElement : nbtListArmor) {
-            NbtCompound itemNbt = (NbtCompound) nbtElement;
+            return inventoryList.stream()
+                    .map(el -> el.asCompound().orElse(null))
+                    .filter(Objects::nonNull)
+                    .map(itemNbt -> {
+                        String id = getStringOr(itemNbt, "id", "minecraft:air");
+                        int count = getIntOr(itemNbt, "Count", 1);
 
-            //System.out.println("SlotByte: "+itemNbt.getByte("Slot"));
-            ItemStack itemStack;
-            //System.out.println("BLOCKTAG: "+itemNbt.getString("id")); //
-            if (!itemNbt.getString("id").get().equals("minecraft:air")) {
+                        ItemStack stack;
+                        if (!id.equals("minecraft:air")) {
+                            stack = ItemStack.CODEC
+                                    .parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt)
+                                    .getOrThrow();
+                        } else {
+                            stack = new ItemStack(Items.AIR, count);
+                        }
 
-                itemStack = ItemStack.fromNbt(world.getRegistryManager(), nbtElement).get();
+                        return Map.entry(index.getAndIncrement(), stack);
+                    })
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            } else if (itemNbt.getString("id").get().equals("minecraft:air")) {
-                itemStack = new ItemStack(Items.AIR);
-            } else {
-                itemStack = new ItemStack(Registries.ITEM.get(Identifier.of(itemNbt.getString("id").get())), itemNbt.getInt("Count").get());
-            }
-
-            itemsToGive.put(index, itemStack);
-            index++;
+        } catch (Exception e) {
+            BorukvaInventoryBackup.LOGGER.error("Exception when try to serialize ender chest: "+e.getMessage());
+            return Collections.emptyMap();
         }
-        return itemsToGive;
+    }
+
+    private static String getStringOr(NbtCompound nbt, String key, String def) {
+        return nbt.getString(key).orElse(def);
+    }
+
+    private static int getIntOr(NbtCompound nbt, String key, int def) {
+        return nbt.getInt(key).orElse(def);
     }
 }

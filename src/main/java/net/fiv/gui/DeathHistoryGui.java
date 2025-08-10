@@ -3,6 +3,7 @@ package net.fiv.gui;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import lombok.Setter;
+import net.fiv.BorukvaInventoryBackup;
 import net.fiv.data_base.entities.DeathTable;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -10,6 +11,8 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.*;
 
 @Setter
@@ -50,10 +53,14 @@ public class DeathHistoryGui extends SimpleGui {
             String armor = this.deathTableList.get(tableSize-i-1).getArmor();
             String offHand = this.deathTableList.get(tableSize-i-1).getOffHand();
             String enderChest = this.deathTableList.get(tableSize-i-1).getEnderChest();
+            String time = Instant.ofEpochMilli(this.deathTableList.get(tableSize-i-1).getDate())
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+                    .toString();
             int xp = this.deathTableList.get(tableSize-i-1).getXp();
 
             this.setSlot(inventory_index, new GuiElementBuilder(Items.CHEST)
-                    .setName(Text.literal("Time: "+this.deathTableList.get(tableSize-i-1).getDate()))
+                    .setName(Text.literal("Time: "+time))
                     .addLoreLine(Text.literal("Death reason: "+this.deathTableList.get(tableSize-i-1).getReason()))
                     .addLoreLine(Text.literal("World: "+this.deathTableList.get(tableSize-i-1).getWorld()))
                     .addLoreLine(Text.literal("Place: "+this.deathTableList.get(tableSize-i-1).getPlace()))
@@ -61,6 +68,10 @@ public class DeathHistoryGui extends SimpleGui {
                     .setCallback((index, type, action) -> {
                         Map<Integer, ItemStack> itemStackList = TableListGui.inventorySerialization(inventory, armor, offHand, player);
                         Map<Integer, ItemStack> enderChestItemStackList = TableListGui.inventorySerialization(enderChest, player);
+                        if(enderChestItemStackList.isEmpty() || itemStackList.isEmpty()){
+                            BorukvaInventoryBackup.LOGGER.error("Can't create InventoryGUI because itemStackList is null or enderChestItemStackList");
+                            return;
+                        }
                         new InventoryGui(player, this.deathTableList.getFirst().getName(), itemStackList, enderChestItemStackList,xp, this).open();
                     })
                     .build());
@@ -70,25 +81,19 @@ public class DeathHistoryGui extends SimpleGui {
         if (lastIndex < this.deathTableList.size()) {
             this.setSlot(53, new GuiElementBuilder(Items.ARROW)
                     .setName(Text.literal("Next Page"))
-                    .setCallback((index, type, action) -> {
-                        new DeathHistoryGui(player, page + 1, this.deathTableList).open();
-                    })
+                    .setCallback((index, type, action) -> new DeathHistoryGui(player, page + 1, this.deathTableList).open())
                     .build());
         }
 
         this.setSlot(49, new GuiElementBuilder(Items.EMERALD)
                 .setName(Text.literal("Back to tables list"))
-                .setCallback((index, type, action) -> {
-                    new TableListGui(player, deathTableList.getFirst().getName()).open();
-                })
+                .setCallback((index, type, action) -> new TableListGui(player, deathTableList.getFirst().getName()).open())
                 .build());
 
         if (page > 0) {
             this.setSlot(45, new GuiElementBuilder(Items.ARROW)
                     .setName(Text.literal("Previous Page"))
-                    .setCallback((index, type, action) -> {
-                        new DeathHistoryGui(player, page - 1, this.deathTableList).open();
-                    })
+                    .setCallback((index, type, action) -> new DeathHistoryGui(player, page - 1, this.deathTableList).open())
                     .build());
         }
 //        System.out.println(TableListGui.activeTables);

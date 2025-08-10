@@ -27,6 +27,7 @@ import net.minecraft.util.collection.DefaultedList;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -57,14 +58,8 @@ public class DatabaseManagerActor extends AbstractActor {
     }
 
     private void initializeDatabase(BActorMessages.InitializeDatabase msg) {
-//        MinecraftServer server = msg.server();
         try {
-//            File worldPath = server.getSavePath(WorldSavePath.ROOT).toFile();
-//            File dataBaseFile = new File(worldPath, MOD_ID+".db");
-//
-//            if(dataBaseFile.createNewFile()){
-//                BorukvaInventoryBackup.LOGGER.info("DataBase file successfully created!");
-//            }
+
             String dbType = ModConfigs.getCONFIG().getOrDefault("key.borukvaInventoryBackup.DATABASE", "H2");
 
             if("h2".equalsIgnoreCase(dbType)){
@@ -130,8 +125,10 @@ public class DatabaseManagerActor extends AbstractActor {
         String world = player.getWorld().getRegistryKey().getValue().toString();
         String place = "%.2f %.2f %.2f".formatted(x, y, z);
 
-        String deathTime = LocalDateTime.now().toString();
-        String formattedDeathTime = deathTime.replace("T", " ").split("\\.")[0];
+        long formattedTime = LocalDateTime.now()
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
 
         String deathReason = source.getName();
 
@@ -143,7 +140,7 @@ public class DatabaseManagerActor extends AbstractActor {
 
         int xp = player.experienceLevel;
         try {
-            borukvaInventoryBackupDB.addDataDeath(name, world, place, formattedDeathTime, deathReason, inventr, armorString, offHandString, enderChestString, xp);
+            borukvaInventoryBackupDB.addDataDeath(name, world, place, formattedTime, deathReason, inventr, armorString, offHandString, enderChestString, xp);
         } catch (SQLException e) {
             throw new SQLExceptionWrapper(e);
         }
@@ -173,8 +170,10 @@ public class DatabaseManagerActor extends AbstractActor {
         String name = player.getName().getString();
         String world = player.getWorld().getRegistryKey().getValue().toString();
 
-        String loginTime = LocalDateTime.now().toString();
-        String formattedLoginTime = loginTime.replace("T", " ").split("\\.")[0];
+        long formattedTime = LocalDateTime.now()
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
 
         String inventr = InventoryGui.playerItems(inventory, player).toString();
         String armorString = InventoryGui.playerItems(armor, player).toString();
@@ -185,7 +184,7 @@ public class DatabaseManagerActor extends AbstractActor {
         int xp = player.experienceLevel;
 
         try {
-            borukvaInventoryBackupDB.addDataLogin(name, world, place, formattedLoginTime, inventr, armorString, offHandString,enderChestString,xp);
+            borukvaInventoryBackupDB.addDataLogin(name, world, place, formattedTime, inventr, armorString, offHandString,enderChestString,xp);
         } catch (SQLException e) {
             throw new SQLExceptionWrapper(e);
         }
@@ -213,8 +212,10 @@ public class DatabaseManagerActor extends AbstractActor {
         String name = player.getName().getString();
         String world = player.getWorld().getRegistryKey().getValue().toString();
 
-        String loginTime = LocalDateTime.now().toString();
-        String formattedLoginTime = loginTime.replace("T", " ").split("\\.")[0];
+        long formattedTime = LocalDateTime.now()
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
 
         String inventr = InventoryGui.playerItems(inventory, player).toString();
         String armorString = InventoryGui.playerItems(armor, player).toString();
@@ -224,18 +225,20 @@ public class DatabaseManagerActor extends AbstractActor {
         int xp = player.experienceLevel;
 
         try {
-            borukvaInventoryBackupDB.addDataLogout(name, world, place, formattedLoginTime, inventr, armorString, offHandString, enderChestString,xp);
+            borukvaInventoryBackupDB.addDataLogout(name, world, place, formattedTime, inventr, armorString, offHandString, enderChestString,xp);
         } catch (SQLException e) {
             throw new SQLExceptionWrapper(e);
         }
     }
 
     private void onPlayerRestore(BActorMessages.SavePlayerDataOnPlayerRestore msg){
-        String loginTime = LocalDateTime.now().toString();
-        String formattedLoginTime = loginTime.replace("T", " ").split("\\.")[0];
+        long formattedTime = LocalDateTime.now()
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
 
         try{
-            borukvaInventoryBackupDB.addDataPreRestore(msg.playerName(), formattedLoginTime, msg.inventory(), msg.armor(), msg.offHand(), msg.enderChest(), msg.isInventory(), msg.xp());
+            borukvaInventoryBackupDB.addDataPreRestore(msg.playerName(), formattedTime, msg.inventory(), msg.armor(), msg.offHand(), msg.enderChest(), msg.isInventory(), msg.xp());
         }catch (SQLException e){
             throw new SQLExceptionWrapper(e);
         }
@@ -262,13 +265,15 @@ public class DatabaseManagerActor extends AbstractActor {
             }
         }
 
-        String loginTime = LocalDateTime.now().toString();
-        String formattedLoginTime = loginTime.replace("T", " ").split("\\.")[0];
+        long formattedTime = LocalDateTime.now()
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
 
         try {
             borukvaInventoryBackupDB.addDataPreRestore(
                     msg.playerName(),
-                    formattedLoginTime,
+                    formattedTime,
                     mainInventory.toString(),
                     armor.toString(),
                     offHand.toString(),

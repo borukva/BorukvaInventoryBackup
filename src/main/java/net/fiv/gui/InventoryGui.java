@@ -30,7 +30,6 @@ public class InventoryGui extends SimpleGui {
 
     public InventoryGui(ServerPlayerEntity player, String playerName, Map<Integer, ItemStack> itemStackMap, Map<Integer, ItemStack> enderChestMap,int xp, SimpleGui caller) {
         super(ScreenHandlerType.GENERIC_9X6, player, false);
-
         addItems(itemStackMap, enderChestMap,xp, playerName,caller);
     }
 
@@ -254,12 +253,12 @@ public class InventoryGui extends SimpleGui {
 
             chest = createChestItem(list.subList(27, list.size()), player.getName().getString()+" second inventory", operatorPlayer);
 
-            operatorPlayer.dropStack(operatorPlayer.getServerWorld(), chest);
+            operatorPlayer.dropStack(operatorPlayer.getWorld(), chest);
         }
 
         chest = createChestItem(list.subList(0, Math.min(27, list.size())), player.getName().getString()+" first inventory", operatorPlayer);
 
-        operatorPlayer.dropStack(operatorPlayer.getServerWorld(), chest);
+        operatorPlayer.dropStack(operatorPlayer.getWorld(), chest);
         if(xp != -1)
             player.setExperienceLevel(xp);
 
@@ -288,7 +287,7 @@ public class InventoryGui extends SimpleGui {
         blockEntityTag.putInt("count", 1);
         blockEntityTag.putString("id", "minecraft:chest");
 
-        return ItemStack.fromNbt(operatorPlayer.getWorld().getRegistryManager(), blockEntityTag).get();
+        return ItemStack.CODEC.parse(operatorPlayer.getRegistryManager().getOps(NbtOps.INSTANCE), blockEntityTag).getOrThrow();
     }
 
 }
