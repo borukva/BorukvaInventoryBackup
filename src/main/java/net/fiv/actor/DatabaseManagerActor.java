@@ -27,7 +27,6 @@ import net.minecraft.util.collection.DefaultedList;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -125,10 +124,8 @@ public class DatabaseManagerActor extends AbstractActor {
         String world = player.getWorld().getRegistryKey().getValue().toString();
         String place = "%.2f %.2f %.2f".formatted(x, y, z);
 
-        long formattedTime = LocalDateTime.now()
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli();
+        String deathTime = LocalDateTime.now().toString();
+        String formattedTime = deathTime.replace("T", " ").split("\\.")[0];
 
         String deathReason = source.getName();
 
@@ -170,10 +167,8 @@ public class DatabaseManagerActor extends AbstractActor {
         String name = player.getName().getString();
         String world = player.getWorld().getRegistryKey().getValue().toString();
 
-        long formattedTime = LocalDateTime.now()
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli();
+        String loginTime = LocalDateTime.now().toString();
+        String formattedTime = loginTime.replace("T", " ").split("\\.")[0];
 
         String inventr = InventoryGui.playerItems(inventory, player).toString();
         String armorString = InventoryGui.playerItems(armor, player).toString();
@@ -212,10 +207,8 @@ public class DatabaseManagerActor extends AbstractActor {
         String name = player.getName().getString();
         String world = player.getWorld().getRegistryKey().getValue().toString();
 
-        long formattedTime = LocalDateTime.now()
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli();
+        String logoutTime = LocalDateTime.now().toString();
+        String formattedTime = logoutTime.replace("T", " ").split("\\.")[0];
 
         String inventr = InventoryGui.playerItems(inventory, player).toString();
         String armorString = InventoryGui.playerItems(armor, player).toString();
@@ -232,10 +225,8 @@ public class DatabaseManagerActor extends AbstractActor {
     }
 
     private void onPlayerRestore(BActorMessages.SavePlayerDataOnPlayerRestore msg){
-        long formattedTime = LocalDateTime.now()
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli();
+        String restoreTime = LocalDateTime.now().toString();
+        String formattedTime = restoreTime.replace("T", " ").split("\\.")[0];
 
         try{
             borukvaInventoryBackupDB.addDataPreRestore(msg.playerName(), formattedTime, msg.inventory(), msg.armor(), msg.offHand(), msg.enderChest(), msg.isInventory(), msg.xp());
@@ -265,10 +256,8 @@ public class DatabaseManagerActor extends AbstractActor {
             }
         }
 
-        long formattedTime = LocalDateTime.now()
-                .atZone(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli();
+        String restoreTime = LocalDateTime.now().toString();
+        String formattedTime = restoreTime.replace("T", " ").split("\\.")[0];
 
         try {
             borukvaInventoryBackupDB.addDataPreRestore(

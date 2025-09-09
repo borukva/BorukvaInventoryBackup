@@ -18,7 +18,7 @@ public class BaseEntity {
     private String name;
 
     @DatabaseField
-    private long date;
+    private String date;
 
     @DatabaseField(dataType = DataType.LONG_STRING)
     private String inventory;
@@ -35,7 +35,7 @@ public class BaseEntity {
     @DatabaseField(dataType = DataType.INTEGER)
     private int xp;
 
-    public BaseEntity(String name, long date, String inventory, String armor, String offHand, String enderChest, int xp) {
+    public BaseEntity(String name, String date, String inventory, String armor, String offHand, String enderChest, int xp) {
         this.name = name;
         this.date = date;
         this.inventory = inventory;

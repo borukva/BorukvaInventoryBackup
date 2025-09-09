@@ -22,7 +22,7 @@ public class DeathTable extends BaseEntity {
     @DatabaseField(dataType = DataType.STRING)
     private String reason;
 
-    public DeathTable(String name, String world, String place, long date, String inventory, String armor, String offHand, String enderChest, int xp, String reason) {
+    public DeathTable(String name, String world, String place, String date, String inventory, String armor, String offHand, String enderChest, int xp, String reason) {
         super(name, date, inventory, armor, offHand, enderChest, xp);
         this.world = world;
         this.place = place;

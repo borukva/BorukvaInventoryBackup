@@ -11,8 +11,6 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.time.Instant;
-import java.time.ZoneId;
 import java.util.*;
 
 @Setter
@@ -53,14 +51,11 @@ public class DeathHistoryGui extends SimpleGui {
             String armor = this.deathTableList.get(tableSize-i-1).getArmor();
             String offHand = this.deathTableList.get(tableSize-i-1).getOffHand();
             String enderChest = this.deathTableList.get(tableSize-i-1).getEnderChest();
-            String time = Instant.ofEpochMilli(this.deathTableList.get(tableSize-i-1).getDate())
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime()
-                    .toString();
+
             int xp = this.deathTableList.get(tableSize-i-1).getXp();
 
             this.setSlot(inventory_index, new GuiElementBuilder(Items.CHEST)
-                    .setName(Text.literal("Time: "+time))
+                    .setName(Text.literal("Time: "+this.deathTableList.get(tableSize-i-1).getDate()))
                     .addLoreLine(Text.literal("Death reason: "+this.deathTableList.get(tableSize-i-1).getReason()))
                     .addLoreLine(Text.literal("World: "+this.deathTableList.get(tableSize-i-1).getWorld()))
                     .addLoreLine(Text.literal("Place: "+this.deathTableList.get(tableSize-i-1).getPlace()))

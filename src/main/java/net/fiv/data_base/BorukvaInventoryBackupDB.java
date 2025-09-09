@@ -45,7 +45,7 @@ public class BorukvaInventoryBackupDB {
 
 
     public void addDataDeath(String name, String world, String place,
-                             long date, String reason, String inventory, String armor, String offHand, String enderChest, int xp) throws SQLException {
+                             String date, String reason, String inventory, String armor, String offHand, String enderChest, int xp) throws SQLException {
 
         deleteOldestRecord(name, deathTableDao);
 
@@ -55,7 +55,7 @@ public class BorukvaInventoryBackupDB {
     }
 
     public void addDataLogin(String name, String world, String place,
-                             long date, String inventory, String armor, String offHand, String enderChest,int xp) throws SQLException{
+                             String date, String inventory, String armor, String offHand, String enderChest,int xp) throws SQLException{
 
         deleteOldestRecord(name, loginTableDao);
 
@@ -65,7 +65,7 @@ public class BorukvaInventoryBackupDB {
     }
 
     public void addDataLogout(String name, String world, String place,
-                              long date, String inventory, String armor, String offHand, String enderChest,int xp) throws SQLException{
+                              String date, String inventory, String armor, String offHand, String enderChest,int xp) throws SQLException{
 
         deleteOldestRecord(name, logoutTableDao);
 
@@ -74,7 +74,7 @@ public class BorukvaInventoryBackupDB {
         logoutTableDao.create(logoutTable);
     }
 
-    public void addDataPreRestore(String name, long date, String inventory, String armor, String offHand, String enderChest, boolean isInventory,int xp) throws SQLException{
+    public void addDataPreRestore(String name, String date, String inventory, String armor, String offHand, String enderChest, boolean isInventory,int xp) throws SQLException{
         deleteOldestRecord(name, preRestoreTableDao);
 
         PreRestoreTable preRestoreTable = new PreRestoreTable(name, date, inventory, armor, offHand, enderChest, isInventory,xp);
