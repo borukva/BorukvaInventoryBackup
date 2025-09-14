@@ -27,7 +27,7 @@ public class BorukvaInventoryBackupDB {
     }
 
     public BorukvaInventoryBackupDB(String url, String user, String password) throws SQLException {
-        connectionSource = new JdbcConnectionSource("jdbc:mysql://"+url, user, password);
+        connectionSource = new JdbcConnectionSource(url, user, password);
         init();
     }
 

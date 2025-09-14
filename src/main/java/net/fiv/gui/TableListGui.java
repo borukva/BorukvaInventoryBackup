@@ -1,5 +1,6 @@
 package net.fiv.gui;
 
+import com.mojang.serialization.DataResult;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.fiv.BorukvaInventoryBackup;
@@ -68,19 +69,22 @@ public class TableListGui extends SimpleGui {
 
         int index = 0;
         for(NbtElement nbtElement: nbtListArmor){
-            NbtCompound itemNbt = (NbtCompound)nbtElement;
+            NbtCompound itemNbt = (NbtCompound) nbtElement;
 
             //System.out.println("SlotByte: "+itemNbt.getByte("Slot"));
             ItemStack itemStack;
             //System.out.println("BLOCKTAG: "+itemNbt.getString("id")); //
             if(!itemNbt.getString("id").get().equals("minecraft:air")){
 
-                itemStack = ItemStack.CODEC.parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt).getOrThrow();
+                DataResult<ItemStack> result =
+                        ItemStack.CODEC.parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt);
+
+                itemStack = result.result().orElseGet(() -> new ItemStack(Items.AIR));
 
             } else if(itemNbt.getString("id").get().equals("minecraft:air")){
                 itemStack = new ItemStack(Items.AIR);
             } else{
-                itemStack = new ItemStack(Registries.ITEM.get(Identifier.of(itemNbt.getString("id").get())), itemNbt.getInt("Count").get());
+                itemStack = new ItemStack(Registries.ITEM.get(Identifier.of(itemNbt.getString("id").get())), itemNbt.getInt("count").get());
             }
 
             itemsToGive.put(index, itemStack);
@@ -93,7 +97,7 @@ public class TableListGui extends SimpleGui {
 
 
         for(NbtElement nbtElement: nbtListOffHand){
-            NbtCompound itemNbt = (NbtCompound)nbtElement;
+            NbtCompound itemNbt = (NbtCompound) nbtElement;
 
             //System.out.println("SlotByte: "+itemNbt.getByte("Slot"));
             //System.out.println(itemNbt);
@@ -103,12 +107,16 @@ public class TableListGui extends SimpleGui {
             //System.out.println("BLOCKTAG: "+itemNbt.getString("id")); //
             if(!itemNbt.getString("id").get().equals("minecraft:air")){
 
-                itemStack = ItemStack.CODEC.parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt).getOrThrow();
+                DataResult<ItemStack> result =
+                        ItemStack.CODEC.parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt);
+
+                itemStack = result.result().orElseGet(() -> new ItemStack(Items.AIR));
+
             } else if(itemNbt.getString("id").get().equals("minecraft:air")){
                 itemStack = new ItemStack(Items.AIR);
 
             }else {
-                itemStack = new ItemStack(Registries.ITEM.get(Identifier.of(itemNbt.getString("id").get())), itemNbt.getInt("Count").get());
+                itemStack = new ItemStack(Registries.ITEM.get(Identifier.of(itemNbt.getString("id").get())), itemNbt.getInt("count").get());
             }
 
             itemsToGive.put(index, itemStack);
@@ -129,12 +137,15 @@ public class TableListGui extends SimpleGui {
 
             //System.out.println("BLOCKTAG: "+itemNbt.getString("id")); //
             if(!itemNbt.getString("id").get().equals("minecraft:air")){
-                itemStack = ItemStack.CODEC.parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt).getOrThrow();
+                DataResult<ItemStack> result =
+                        ItemStack.CODEC.parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt);
+
+                itemStack = result.result().orElseGet(() -> new ItemStack(Items.AIR));
+
             } else if(itemNbt.getString("id").get().equals("minecraft:air")){
                 itemStack = new ItemStack(Items.AIR);
-
             }else {
-                itemStack = new ItemStack(Registries.ITEM.get(Identifier.of(itemNbt.getString("id").get())), itemNbt.getInt("Count").get());
+                itemStack = new ItemStack(Registries.ITEM.get(Identifier.of(itemNbt.getString("id").get())), itemNbt.getInt("count").get());
             }
 
             itemsToGive.put(index, itemStack);
@@ -160,15 +171,16 @@ public class TableListGui extends SimpleGui {
                     .filter(Objects::nonNull)
                     .map(itemNbt -> {
                         String id = getStringOr(itemNbt, "id", "minecraft:air");
-                        int count = getIntOr(itemNbt, "Count", 1);
 
                         ItemStack stack;
+
                         if (!id.equals("minecraft:air")) {
-                            stack = ItemStack.CODEC
-                                    .parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt)
-                                    .getOrThrow();
+                            DataResult<ItemStack> result =
+                                    ItemStack.CODEC.parse(world.getRegistryManager().getOps(NbtOps.INSTANCE), itemNbt);
+
+                            stack = result.result().orElseGet(() -> new ItemStack(Items.AIR));
                         } else {
-                            stack = new ItemStack(Items.AIR, count);
+                            stack = new ItemStack(Items.AIR);
                         }
 
                         return Map.entry(index.getAndIncrement(), stack);
@@ -183,9 +195,5 @@ public class TableListGui extends SimpleGui {
 
     private static String getStringOr(NbtCompound nbt, String key, String def) {
         return nbt.getString(key).orElse(def);
-    }
-
-    private static int getIntOr(NbtCompound nbt, String key, int def) {
-        return nbt.getInt(key).orElse(def);
     }
 }

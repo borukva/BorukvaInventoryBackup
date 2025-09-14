@@ -26,7 +26,6 @@ public class PreRestoreGui extends SimpleGui {
         this.page = page;
 
         addButtons();
-
     }
 
     @Override
@@ -59,11 +58,11 @@ public class PreRestoreGui extends SimpleGui {
                     .addLoreLine(Text.literal("XpLevel: "+this.preRestoreTableList.get(tableSize-i-1).getXp()))
                     .setCallback((index, type, action) -> {
                         Map<Integer, ItemStack> itemStackList = TableListGui.inventorySerialization(inventory, armor, offHand, player);
-                        Map<Integer, ItemStack> enderChestItemStackList = TableListGui.inventorySerialization(enderChest, player);
+
                         if(isInventory){
-                            new InventoryGui(player, this.preRestoreTableList.getFirst().getName(), itemStackList, enderChestItemStackList,xp, this).open();
+                            new InventoryGui(player, this.preRestoreTableList.getFirst().getName(), itemStackList, enderChest,xp, this).open();
                         } else {
-                            new EnderChestGui(player, this.preRestoreTableList.getFirst().getName(), itemStackList, this).open();
+                            new EnderChestGui(player, this.preRestoreTableList.getFirst().getName(), enderChest, this).open();
                         }
 
                     })

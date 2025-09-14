@@ -23,8 +23,10 @@ public class EnderChestGui extends SimpleGui {
 
 
 
-    public EnderChestGui(ServerPlayerEntity player, String playerName,Map<Integer, ItemStack> enderChestMap, SimpleGui caller) {
+    public EnderChestGui(ServerPlayerEntity player, String playerName,String enderChest, SimpleGui caller) {
         super(ScreenHandlerType.GENERIC_9X4, player, false);
+
+        Map<Integer, ItemStack> enderChestMap = TableListGui.inventorySerialization(enderChest, player);
 
         addItems(enderChestMap, playerName,caller);
     }
@@ -42,7 +44,7 @@ public class EnderChestGui extends SimpleGui {
                 .setName(Text.literal("Backup player items to the box").formatted(Formatting.GREEN, Formatting.BOLD))
                 .setLore(new ArrayList<>(List.of(Text.literal("clear your inventory before issuing").formatted(Formatting.RED, Formatting.BOLD))))
                 .setCallback((index, type, action) -> {
-                    InventoryGui.backUpPlayerItemsToChest(enderChestMap, -1,this.player.getServer().getPlayerManager().getPlayer(playerName), this.player);
+                    InventoryGui.backUpPlayerItemsToChest(enderChestMap, playerName, this.player);
                     this.getPlayer().sendMessage(Text.literal("You have successfully restored items to box!").formatted(Formatting.GREEN, Formatting.BOLD));
                 })
                 .build());
