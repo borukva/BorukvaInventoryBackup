@@ -16,6 +16,7 @@ public class ModConfigs {
 
     public static int MAX_RECORDS;
     public static String DATABASE_TYPE;
+    public static String DATABASE_NAME;
     public static String DB_URL;
     public static String DB_USER;
     public static String DB_PASSWORD;
@@ -49,6 +50,7 @@ public class ModConfigs {
         if (config != null) {
             MAX_RECORDS = config.maxRecords;
             DATABASE_TYPE = config.databaseType;
+            DATABASE_NAME = config.databaseName;
             DB_URL = config.databaseUrl;
             DB_USER = config.databaseUser;
             DB_PASSWORD = config.databasePassword;

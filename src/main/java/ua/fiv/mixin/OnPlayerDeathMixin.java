@@ -1,6 +1,5 @@
 package ua.fiv.mixin;
 
-import akka.actor.ActorRef;
 import ua.fiv.ModInit;
 
 import ua.fiv.actor.BActorMessages;
@@ -18,6 +17,6 @@ public class OnPlayerDeathMixin {
             ServerPlayerEntity player = (ServerPlayerEntity) (Object) this;
 
             ModInit.getDatabaseManagerActor().tell(
-                    new BActorMessages.SavePlayerDataOnPlayerDeath(player, source), ActorRef.noSender());
+                    new BActorMessages.SavePlayerDataOnPlayerDeath(player, source));
     }
 }

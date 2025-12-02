@@ -1,6 +1,5 @@
 package ua.fiv.mixin;
 
-import akka.actor.ActorRef;
 import ua.fiv.ModInit;
 import ua.fiv.actor.BActorMessages;
 import net.minecraft.server.PlayerManager;
@@ -15,7 +14,7 @@ public class OnPlayerLogoutMixin {
     @Inject(method = "remove", at = @At("HEAD"))
     private void onPlayerLogoutMixin(ServerPlayerEntity player, CallbackInfo ci){
         ModInit.getDatabaseManagerActor().tell(
-                new BActorMessages.SavePlayerDataOnPlayerLogout(player), ActorRef.noSender());
+                new BActorMessages.SavePlayerDataOnPlayerLogout(player));
     }
 
 }

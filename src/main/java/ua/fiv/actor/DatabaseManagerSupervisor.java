@@ -1,43 +1,21 @@
 package ua.fiv.actor;
 
-import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
-import akka.actor.OneForOneStrategy;
-import akka.actor.Props;
-import akka.actor.SupervisorStrategy;
-import akka.japi.pf.DeciderBuilder;
+import org.apache.pekko.actor.typed.Behavior;
+import org.apache.pekko.actor.typed.SupervisorStrategy;
+import org.apache.pekko.actor.typed.javadsl.Behaviors;
+
 import java.time.Duration;
-import ua.fiv.ModInit;
 
-public class DatabaseManagerSupervisor extends AbstractActor {
+public class DatabaseManagerSupervisor {
 
-    public static Props props() {
-        return Props.create(DatabaseManagerSupervisor.class);
-    }
-
-    private final ActorRef databaseManagerActor;
-
-    public DatabaseManagerSupervisor() {
-        databaseManagerActor = getContext().actorOf(DatabaseManagerActor.props(), "databaseManagerActor");
-    }
-    @Override
-    public Receive createReceive() {
-        return receiveBuilder()
-                .matchAny(message -> databaseManagerActor.forward(message, getContext()))
-                .build();
-    }
-
-    @Override
-    public SupervisorStrategy supervisorStrategy() {
-        return new OneForOneStrategy(
-                5, // maxNrOfRetries
-                Duration.ofMinutes(1), // withinTimeRange
-                DeciderBuilder.match(SQLExceptionWrapper.class, e -> {
-                            ModInit.LOGGER.error("SQLExceptionWrapper occurred, restarting actor: {}", e.getMessage());
-                            return SupervisorStrategy.restart();
-                        })
-                        .matchAny(o -> SupervisorStrategy.escalate())
-                        .build()
-        );
+    public static Behavior<BActorMessages.Command> create() {
+        return Behaviors.supervise(DatabaseManagerActor.create())
+                .onFailure(SQLExceptionWrapper.class,
+                        SupervisorStrategy.restartWithBackoff(
+                                Duration.ofMillis(200), // min backoff
+                                Duration.ofSeconds(10), // max backoff
+                                0.1 // random factor
+                        ).withMaxRestarts(5)
+                );
     }
 }

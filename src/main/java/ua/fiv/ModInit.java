@@ -1,10 +1,9 @@
 package ua.fiv;
 
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
+import org.apache.pekko.actor.typed.ActorRef;
+import org.apache.pekko.actor.typed.ActorSystem;
 import lombok.Getter;
 import net.fabricmc.api.ModInitializer;
-
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import ua.fiv.actor.BActorMessages;
 import ua.fiv.actor.DatabaseManagerSupervisor;
@@ -18,9 +17,9 @@ public class ModInit implements ModInitializer {
 	public static final String MOD_ID = "borukva_inventory_backup";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	@Getter
-	private static ActorSystem actorSystem;
+	private static ActorSystem<BActorMessages.Command> actorSystem;
 	@Getter
-	private static ActorRef databaseManagerActor;
+	private static ActorRef<BActorMessages.Command> databaseManagerActor;
 
 	@Override
 	public void onInitialize() {
@@ -29,13 +28,11 @@ public class ModInit implements ModInitializer {
 		GetInventoryHistoryCommand.registerCommandOfflinePlayer();
 		ModConfigs.registerConfigs();
 
-		actorSystem = ActorSystem.create("BorukvaInventoryBackupActorSystem");
-		databaseManagerActor = actorSystem.actorOf(DatabaseManagerSupervisor.props(), "databaseManagerSupervisor");
+		actorSystem = ActorSystem.create(DatabaseManagerSupervisor.create(), "BorukvaInventoryBackupActorSystem");
+		databaseManagerActor = actorSystem;
 	}
 
 	private void onServerStarting(MinecraftServer server) {
-		ModInit.getDatabaseManagerActor().tell(
-				new BActorMessages.InitializeDatabase(server), ActorRef.noSender());
+		databaseManagerActor.tell(new BActorMessages.InitializeDatabase(server));
 	}
-
 }

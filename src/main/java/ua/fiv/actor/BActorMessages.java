@@ -7,17 +7,18 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-public final class BActorMessages {
+public interface BActorMessages {
+    interface Command {}
 
-    public record SavePlayerDataOnPlayerDeath(ServerPlayerEntity player, DamageSource source) {}
-    public record SavePlayerDataOnPlayerConnect(ServerPlayerEntity player) {}
-    public record SavePlayerDataOnPlayerLogout(ServerPlayerEntity player) {}
-    public record SavePlayerDataOnPlayerRestore(String playerName, String inventory, String armor, String offHand, String enderChest, boolean isInventory,int xp) {}
-    public record SavePlayerDataOnPlayerRestoreNbt(String playerName, NbtList inventory, NbtList enderChest, boolean isInventory,int xp) {}
-    public record GetDeathTableMap(ServerPlayerEntity player, String playerName) {}
-    public record GetLogoutTableMap(ServerPlayerEntity player, String playerName) {}
-    public record GetLoginTableMap(ServerPlayerEntity player, String playerName) {}
-    public record GetPreRestoreTableMap(ServerPlayerEntity player, String playerName) {}
-    public record GetInventoryHistory(CommandContext<ServerCommandSource> context) {}
-    public record InitializeDatabase(MinecraftServer server) {}
+    record SavePlayerDataOnPlayerDeath(ServerPlayerEntity player, DamageSource source) implements Command {}
+    record SavePlayerDataOnPlayerConnect(ServerPlayerEntity player) implements Command {}
+    record SavePlayerDataOnPlayerLogout(ServerPlayerEntity player) implements Command {}
+    record SavePlayerDataOnPlayerRestore(String playerName, String inventory, String armor, String offHand, String enderChest, boolean isInventory, int xp) implements Command {}
+    record SavePlayerDataOnPlayerRestoreNbt(String playerName, NbtList inventory, NbtList enderChest, boolean isInventory, int xp) implements Command {}
+    record GetDeathTableMap(ServerPlayerEntity player, String playerName) implements Command {}
+    record GetLogoutTableMap(ServerPlayerEntity player, String playerName) implements Command {}
+    record GetLoginTableMap(ServerPlayerEntity player, String playerName) implements Command {}
+    record GetPreRestoreTableMap(ServerPlayerEntity player, String playerName) implements Command {}
+    record GetInventoryHistory(CommandContext<ServerCommandSource> context) implements Command {}
+    record InitializeDatabase(MinecraftServer server) implements Command {}
 }

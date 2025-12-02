@@ -1,6 +1,5 @@
 package ua.fiv.gui;
 
-import akka.actor.ActorRef;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -40,8 +39,6 @@ public class InventoryGui extends SimpleGui {
                     .build());
             i++;
         }
-
-
 
         this.setSlot(53, new GuiElementBuilder(Items.PAPER)
                 .setName(Text.literal("Backup player inventory(recovery will be irreversible)").formatted(Formatting.RED, Formatting.BOLD))
@@ -86,13 +83,13 @@ public class InventoryGui extends SimpleGui {
 
     protected static void savePreRestorePlayerInventory(String playerName, String inventory, String armor, String offHand, String enderChest, boolean isInventory,int xp){
         ModInit.getDatabaseManagerActor().tell(
-                new BActorMessages.SavePlayerDataOnPlayerRestore(playerName, inventory, armor, offHand, enderChest, isInventory, xp), ActorRef.noSender());
+                new BActorMessages.SavePlayerDataOnPlayerRestore(playerName, inventory, armor, offHand, enderChest, isInventory, xp));
 
     }
 
     protected static void savePreRestorePlayerInventory(String playerName, NbtList inventory, NbtList enderChest ,int xp){
         ModInit.getDatabaseManagerActor().tell(
-                new BActorMessages.SavePlayerDataOnPlayerRestoreNbt(playerName, inventory, enderChest, true ,xp), ActorRef.noSender());
+                new BActorMessages.SavePlayerDataOnPlayerRestoreNbt(playerName, inventory, enderChest, true ,xp));
 
     }
 
@@ -134,9 +131,8 @@ public class InventoryGui extends SimpleGui {
                 );
 
         playerInventory.clear();
-        //System.out.println("Back: "+itemStackMap);
+
         for(ItemStack itemStack: itemStackMap.values()){
-            //System.out.println("Size"+playerInventory.size());
             if(index < 4){
                 playerInventory.setStack(36+index, itemStack);
             } else if (index==4) {
@@ -144,7 +140,6 @@ public class InventoryGui extends SimpleGui {
             } else {
                 playerInventory.setStack(index-5, itemStack);
             }
-            //System.out.println("index: "+index);
             index++;
         }
         player.setExperienceLevel(xp);
@@ -154,7 +149,6 @@ public class InventoryGui extends SimpleGui {
     private void saveOfflinePlayerInventory(UUID uuid, int xp, Map<Integer, ItemStack> itemStackMap, String playerName) {
         File playerDataDir = this.player.getServer().getSavePath(WorldSavePath.PLAYERDATA).toFile();
 
-//        System.out.println(playerDataDir);
         try {
             File file2 = new File(playerDataDir, uuid.toString() + ".dat");
 
@@ -187,7 +181,6 @@ public class InventoryGui extends SimpleGui {
 
                 index++;
             }
-            System.out.print("OffPlayer: "+inventoryList);
 
             nbtCompound.put("Inventory", inventoryList);
             nbtCompound.put("equipment", equipment);
