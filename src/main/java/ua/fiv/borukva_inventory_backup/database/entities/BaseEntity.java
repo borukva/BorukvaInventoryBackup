@@ -1,4 +1,4 @@
-package ua.fiv.borukva_inventory_backup.data_base.entities;
+package ua.fiv.borukva_inventory_backup.database.entities;
 
 import com.j256.ormlite.field.DataType;
 import com.j256.ormlite.field.DatabaseField;

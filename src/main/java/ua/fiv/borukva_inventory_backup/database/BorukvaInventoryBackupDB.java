@@ -1,11 +1,11 @@
-package ua.fiv.borukva_inventory_backup.data_base;
+package ua.fiv.borukva_inventory_backup.database;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import ua.fiv.borukva_inventory_backup.config.ModConfigs;
-import ua.fiv.borukva_inventory_backup.data_base.entities.*;
+import ua.fiv.borukva_inventory_backup.database.entities.*;
 
 import java.sql.SQLException;
 import java.util.List;

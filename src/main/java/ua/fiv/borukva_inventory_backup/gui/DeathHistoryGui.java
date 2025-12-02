@@ -4,7 +4,7 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import lombok.Setter;
 import ua.fiv.borukva_inventory_backup.ModInit;
-import ua.fiv.borukva_inventory_backup.data_base.entities.DeathTable;
+import ua.fiv.borukva_inventory_backup.database.entities.DeathTable;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandlerType;

@@ -24,6 +24,7 @@ public class ModInit implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ServerLifecycleEvents.SERVER_STARTING.register(this::onServerStarting);
+		ServerLifecycleEvents.SERVER_STOPPING.register(this::onServerStopping);
 
 		GetInventoryHistoryCommand.registerCommandOfflinePlayer();
 		ModConfigs.registerConfigs();
@@ -34,5 +35,11 @@ public class ModInit implements ModInitializer {
 
 	private void onServerStarting(MinecraftServer server) {
 		databaseManagerActor.tell(new BActorMessages.InitializeDatabase(server));
+	}
+
+	public void onServerStopping(MinecraftServer minecraftServer) {
+		if (actorSystem != null) {
+			actorSystem.terminate();
+		}
 	}
 }

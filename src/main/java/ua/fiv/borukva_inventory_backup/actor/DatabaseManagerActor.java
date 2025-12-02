@@ -21,11 +21,11 @@ import org.apache.pekko.actor.typed.javadsl.Behaviors;
 import org.apache.pekko.actor.typed.javadsl.Receive;
 import ua.fiv.borukva_inventory_backup.ModInit;
 import ua.fiv.borukva_inventory_backup.config.ModConfigs;
-import ua.fiv.borukva_inventory_backup.data_base.BorukvaInventoryBackupDB;
-import ua.fiv.borukva_inventory_backup.data_base.entities.DeathTable;
-import ua.fiv.borukva_inventory_backup.data_base.entities.LoginTable;
-import ua.fiv.borukva_inventory_backup.data_base.entities.LogoutTable;
-import ua.fiv.borukva_inventory_backup.data_base.entities.PreRestoreTable;
+import ua.fiv.borukva_inventory_backup.database.BorukvaInventoryBackupDB;
+import ua.fiv.borukva_inventory_backup.database.entities.DeathTable;
+import ua.fiv.borukva_inventory_backup.database.entities.LoginTable;
+import ua.fiv.borukva_inventory_backup.database.entities.LogoutTable;
+import ua.fiv.borukva_inventory_backup.database.entities.PreRestoreTable;
 import ua.fiv.borukva_inventory_backup.gui.*;
 
 import java.sql.SQLException;
