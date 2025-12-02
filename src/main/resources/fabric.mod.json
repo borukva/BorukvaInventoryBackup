@@ -17,7 +17,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"ua.fiv.ModInit"
+			"ua.fiv.borukva_inventory_backup.ModInit"
 		]
 	},
 	"mixins": [
