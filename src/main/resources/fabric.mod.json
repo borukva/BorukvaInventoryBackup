@@ -5,7 +5,8 @@
 	"name": "borukva_inventory_backup",
 	"description": "From Fiv_ to Borukva",
 	"authors": [
-		"Fiv_"
+		"Fiv_",
+		"Stikulzon"
 	],
 	"contact": {
 		"homepage": "https://modrinth.com/mod/borukva-inventory-backup",
@@ -16,10 +17,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-          "net.fiv.BorukvaInventoryBackup"
-		],
-		"fabric-datagen": [
-			"net.fiv.Borukva_inventory_backupDataGenerator"
+			"ua.fiv.ModInit"
 		]
 	},
 	"mixins": [
