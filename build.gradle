@@ -39,6 +39,8 @@ dependencies {
 
 	// Pekko
 	include (implementation "org.apache.pekko:pekko-actor-typed_3:${pekko_version}")
+	include (implementation "org.apache.pekko:pekko-actor_3:${pekko_version}")
+	include (implementation "org.apache.pekko:pekko-slf4j_3:${pekko_version}")
 	include (implementation 'com.typesafe:config:1.4.3')
 	include (implementation 'org.scala-lang:scala3-library_3:3.3.3')
 	include (implementation "org.scala-lang.modules:scala-java8-compat_2.13:1.0.2")
