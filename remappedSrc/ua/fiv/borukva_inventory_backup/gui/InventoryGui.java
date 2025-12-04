@@ -5,8 +5,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.util.NameToIdCache;
 import ua.fiv.borukva_inventory_backup.ModInit;
 import ua.fiv.borukva_inventory_backup.actor.BActorMessages;
 import net.minecraft.entity.player.PlayerEntity;
@@ -98,15 +96,15 @@ public class InventoryGui extends SimpleGui {
     public static UUID getOfflinePlayerProfile(String playerName, MinecraftServer server) {
         if (server == null) return null;
 
-        NameToIdCache cache = server.getApiServices().nameToIdCache();
+        UserCache cache = server.getUserCache();
 
         if (cache == null) return null;
 
-        Optional<PlayerConfigEntry> optionalGameProfile = cache.findByName(playerName);
+        Optional<GameProfile> optionalGameProfile = cache.findByName(playerName);
 
         if (optionalGameProfile.isPresent()){
-            PlayerConfigEntry gameProfile = optionalGameProfile.get();
-            return gameProfile.id();
+            GameProfile gameProfile = optionalGameProfile.get();
+            return gameProfile.getId();
         }
         return null;
     }
