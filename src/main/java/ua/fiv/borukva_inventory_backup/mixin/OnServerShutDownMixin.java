@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftServer.class)
 public class OnServerShutDownMixin {
-    @Inject(method="shutdown", at = @At("TAIL"))
+    @Inject(method="stopServer", at = @At("TAIL"))
     private void onServerShutDownMixin(CallbackInfo ci) throws Exception {
         DatabaseManagerActor.getBorukvaInventoryBackupDB().closeDbConnection();
     }

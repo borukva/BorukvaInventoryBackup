@@ -6,13 +6,13 @@ import net.minecraft.nbt.*;
 
 public class InventorySerializer {
 
-    public static NbtCompound deserializeInventory(String json) {
-        NbtCompound inventoryTag = new NbtCompound();
+    public static CompoundTag deserializeInventory(String json) {
+        CompoundTag inventoryTag = new CompoundTag();
 
         try{
             json = "{" + "Inventory: "+ json + "}";
 
-            inventoryTag = net.minecraft.nbt.StringNbtReader.readCompound(json);
+            inventoryTag = TagParser.parseCompoundFully(json);
 
             return validateComponents(inventoryTag);
         } catch (CommandSyntaxException e){
@@ -22,15 +22,15 @@ public class InventorySerializer {
         return inventoryTag;
     }
 
-    private static NbtCompound validateComponents(NbtCompound compound){
-        NbtList oldList = compound.getList("Inventory").get();
+    private static CompoundTag validateComponents(CompoundTag compound){
+        ListTag oldList = compound.getList("Inventory").get();
 
         for(int i=0; i<oldList.size(); i++){
-            NbtCompound elem = (NbtCompound)oldList.get(i);
+            CompoundTag elem = (CompoundTag)oldList.get(i);
             if(elem.contains("count") && elem.contains("id")){
                 elem.putByte("Slot", (byte) i);
             }
-            if(elem.getCompound("components").isEmpty()){
+            if(elem.getCompound("components").map(CompoundTag::isEmpty).orElse(false)){
                 elem.remove("components");
             }
 

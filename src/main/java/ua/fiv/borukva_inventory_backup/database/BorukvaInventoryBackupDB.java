@@ -93,7 +93,8 @@ public class BorukvaInventoryBackupDB {
             if (results.size() >= maxRecords && maxRecords > 0) {
                 List<T> oldestRecords = dao.queryBuilder().orderBy("date", true).where().eq("name", playerName).query();
 
-                int recordsToDeleteCount = oldestRecords.size() - maxRecords;
+                // Make room for the record that the caller inserts immediately after this method.
+                int recordsToDeleteCount = oldestRecords.size() - maxRecords + 1;
                 if (recordsToDeleteCount > 0) {
                     List<T> recordsToDelete = oldestRecords.subList(0, recordsToDeleteCount);
                     dao.delete(recordsToDelete);

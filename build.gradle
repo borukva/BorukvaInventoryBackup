@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version "${loom_version}"
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
 	id 'maven-publish'
 }
 
@@ -11,31 +11,31 @@ base {
 }
 
 repositories {
-	maven { url 'https://maven.nucleoid.xyz' }
+	maven { url = 'https://maven.nucleoid.xyz' }
 	maven { url = "https://repo.akka.io/maven/" }
 	maven { url = "https://jitpack.io" }
 	maven { url = "https://mvnrepository.com/artifact/org.scala-lang/scala3-library" }
+	maven { url = "https://api.modrinth.com/maven" }
 	mavenCentral()
 }
 
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// lombok
-	compileOnly("org.projectlombok:lombok:1.18.38")
-	annotationProcessor("org.projectlombok:lombok:1.18.38")
+	compileOnly("org.projectlombok:lombok:1.18.42")
+	annotationProcessor("org.projectlombok:lombok:1.18.42")
 
 	// sqlite and orm
 	implementation include('com.j256.ormlite:ormlite-jdbc:6.1')
 	implementation include('com.j256.ormlite:ormlite-core:6.1')
 	include(implementation 'com.h2database:h2:2.3.232')
-	include(implementation("mysql:mysql-connector-java:8.0.33"))
+	include(implementation("com.mysql:mysql-connector-j:8.0.33"))
 
 	// Pekko
 	include (implementation "org.apache.pekko:pekko-actor-typed_3:${pekko_version}")
@@ -45,8 +45,22 @@ dependencies {
 	include (implementation 'org.scala-lang:scala3-library_3:3.3.3')
 	include (implementation "org.scala-lang.modules:scala-java8-compat_2.13:1.0.2")
 
-	modImplementation include("eu.pb4:sgui:1.9.0+1.21.5")
-	include(modImplementation('me.lucko:fabric-permissions-api:0.4.1'))
+	implementation include("eu.pb4:sgui:2.1.0+26.2")
+	include(implementation('me.lucko:fabric-permissions-api:0.7.0'))
+
+	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+	runtimeOnly "maven.modrinth:scalable-cats-force:5.0.0-fabric"
+}
+
+test {
+	useJUnitPlatform()
+	dependsOn "jar"
+	def testRunDirectory = layout.buildDirectory.dir("test-run").get().asFile
+	doFirst {
+		systemProperty "borukva.test.modJar", tasks.named("jar").get().archiveFile.get().asFile.absolutePath
+		testRunDirectory.mkdirs()
+	}
+	workingDir testRunDirectory
 }
 
 processResources {
@@ -58,7 +72,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 25
 }
 
 java {
@@ -67,8 +81,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {
