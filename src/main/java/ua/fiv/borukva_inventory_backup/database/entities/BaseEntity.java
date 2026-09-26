@@ -35,7 +35,11 @@ public class BaseEntity {
     @DatabaseField(dataType = DataType.INTEGER)
     private int xp;
 
-    public BaseEntity(String name, String date, String inventory, String armor, String offHand, String enderChest, int xp) {
+    /** Serialized {@code TrinketEntry} list; {@code null} for records without trinket data. */
+    @DatabaseField(dataType = DataType.LONG_STRING)
+    private String trinkets;
+
+    public BaseEntity(String name, String date, String inventory, String armor, String offHand, String enderChest, int xp, String trinkets) {
         this.name = name;
         this.date = date;
         this.inventory = inventory;
@@ -43,5 +47,6 @@ public class BaseEntity {
         this.offHand = offHand;
         this.enderChest = enderChest;
         this.xp = xp;
+        this.trinkets = trinkets;
     }
 }

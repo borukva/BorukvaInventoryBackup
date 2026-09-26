@@ -9,7 +9,9 @@ import net.minecraft.server.players.UserNameToIdResolver;
 import ua.fiv.borukva_inventory_backup.ModInit;
 import ua.fiv.borukva_inventory_backup.actor.BActorMessages;
 import ua.fiv.borukva_inventory_backup.actor.PlayerSnapshot;
+import ua.fiv.borukva_inventory_backup.compat.TrinketsCompat;
 import ua.fiv.borukva_inventory_backup.util.OfflineInventorySnapshot;
+import ua.fiv.borukva_inventory_backup.util.TrinketEntry;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -27,13 +29,13 @@ import java.util.*;
 
 public class InventoryGui extends SimpleGui {
 
-    public InventoryGui(ServerPlayer player, String playerName, Map<Integer, ItemStack> itemStackMap, String enderChest, int xp, SimpleGui caller) {
+    public InventoryGui(ServerPlayer player, String playerName, Map<Integer, ItemStack> itemStackMap, String enderChest, String trinkets, int xp, SimpleGui caller) {
         super(MenuType.GENERIC_9x6, player, false);
-        addItems(itemStackMap, enderChest, xp, playerName,caller);
+        addItems(itemStackMap, enderChest, TrinketEntry.parse(trinkets, player.registryAccess()), xp, playerName,caller);
     }
 
 
-    private void addItems(Map<Integer, ItemStack> itemStackMap, String enderChest, int xp, String playerName, SimpleGui caller){
+    private void addItems(Map<Integer, ItemStack> itemStackMap, String enderChest, List<TrinketEntry> trinkets, int xp, String playerName, SimpleGui caller){
         int i = 0;
         for(ItemStack item: itemStackMap.values()){
             this.setSlot(i, new GuiElementBuilder(item)
@@ -48,11 +50,14 @@ public class InventoryGui extends SimpleGui {
                     UUID uuid = getOfflinePlayerProfile(playerName, player.level().getServer());
 
                     if(this.player.level().getServer().getPlayerList().getPlayer(playerName) != null){
-                        backUpPlayerItems(itemStackMap, xp, this.player.level().getServer().getPlayerList().getPlayer(playerName));
+                        backUpPlayerItems(itemStackMap, trinkets, xp, this.player.level().getServer().getPlayerList().getPlayer(playerName));
                         this.getPlayer().sendSystemMessage(Component.literal("You have successfully restored items to an online player!").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
                     } else {
-                        saveOfflinePlayerInventory(uuid, xp,itemStackMap, playerName);
+                        saveOfflinePlayerInventory(uuid, xp,itemStackMap, trinkets, playerName);
                         this.getPlayer().sendSystemMessage(Component.literal("You have successfully restored items to an offline player!").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
+                        if (trinkets != null) {
+                            this.getPlayer().sendSystemMessage(Component.literal("Trinkets will be put on at the player's next login.").withStyle(ChatFormatting.YELLOW));
+                        }
 
                     }
 
@@ -63,10 +68,17 @@ public class InventoryGui extends SimpleGui {
                 .setName(Component.literal("Backup player items to the box").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD))
                 .setLore(new ArrayList<>(List.of(Component.literal("clear your inventory before issuing").withStyle(ChatFormatting.RED, ChatFormatting.BOLD))))
                 .setCallback(() -> {
-                    backUpPlayerItemsToChest(itemStackMap, playerName, this.player);
+                    backUpPlayerItemsToChest(itemStackMap, trinkets == null ? List.of() : trinkets.stream().map(TrinketEntry::stack).toList(), playerName, this.player);
                     this.getPlayer().sendSystemMessage(Component.literal("You have successfully restored items to box!").withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD));
                 })
                 .build());
+
+        if (trinkets != null) {
+            this.setSlot(48, new GuiElementBuilder(Items.TOTEM_OF_UNDYING)
+                    .setName(Component.literal("Player trinkets: " + trinkets.size()).withStyle(ChatFormatting.GOLD))
+                    .setCallback(() -> new TrinketsGui(player, trinkets, this).open())
+                    .build());
+        }
 
         this.setSlot(47, new GuiElementBuilder(Items.ENDER_CHEST)
                 .setName(Component.literal("Player ender chest").withStyle(ChatFormatting.DARK_PURPLE))
@@ -83,9 +95,9 @@ public class InventoryGui extends SimpleGui {
                 .build());
     }
 
-    protected static void savePreRestorePlayerInventory(String playerName, String inventory, String armor, String offHand, String enderChest, boolean isInventory,int xp){
+    protected static void savePreRestorePlayerInventory(String playerName, String inventory, String armor, String offHand, String enderChest, boolean isInventory,int xp, String trinkets){
         ModInit.getDatabaseManagerActor().tell(
-                new BActorMessages.SavePlayerDataOnPlayerRestore(playerName, inventory, armor, offHand, enderChest, isInventory, xp));
+                new BActorMessages.SavePlayerDataOnPlayerRestore(playerName, inventory, armor, offHand, enderChest, isInventory, xp, trinkets));
 
     }
 
@@ -105,7 +117,7 @@ public class InventoryGui extends SimpleGui {
         return null;
     }
 
-    private void backUpPlayerItems(Map<Integer, ItemStack> itemStackMap, int xp,ServerPlayer player){
+    private void backUpPlayerItems(Map<Integer, ItemStack> itemStackMap, List<TrinketEntry> trinkets, int xp,ServerPlayer player){
 
         Inventory playerInventory = player.getInventory();
 
@@ -116,7 +128,8 @@ public class InventoryGui extends SimpleGui {
                 snapshot.offHand(),
                 snapshot.enderChest(),
                 true,
-                snapshot.xp()
+                snapshot.xp(),
+                snapshot.trinkets()
                 );
 
         playerInventory.clearContent();
@@ -133,9 +146,14 @@ public class InventoryGui extends SimpleGui {
         }
         player.setExperienceLevels(xp);
 
+        // Snapshots without trinket data leave the current trinkets alone.
+        if (trinkets != null) {
+            TrinketsCompat.restore(player, trinkets);
+        }
+
     }
 
-    private void saveOfflinePlayerInventory(UUID uuid, int xp, Map<Integer, ItemStack> itemStackMap, String playerName) {
+    private void saveOfflinePlayerInventory(UUID uuid, int xp, Map<Integer, ItemStack> itemStackMap, List<TrinketEntry> trinkets, String playerName) {
         File playerDataDir = this.player.level().getServer().getWorldPath(LevelResource.PLAYER_DATA_DIR).toFile();
 
         try {
@@ -157,7 +175,8 @@ public class InventoryGui extends SimpleGui {
                     snapshot.offHand(),
                     OfflineInventorySnapshot.normalizeSlottedContainer(enderChestLists, 27),
                     true,
-                    nbtCompound.getIntOr("XpLevel", 0)
+                    nbtCompound.getIntOr("XpLevel", 0),
+                    null
             );
 
             inventoryList.clear();
@@ -188,6 +207,12 @@ public class InventoryGui extends SimpleGui {
             nbtCompound.putInt("XpLevel", xp);
 
             NbtIo.writeCompressed(nbtCompound, file2.toPath());
+
+            // Trinkets keeps its own format in the player file; put them on at the next login instead.
+            if (trinkets != null) {
+                ModInit.getDatabaseManagerActor().tell(new BActorMessages.SavePendingTrinkets(
+                        playerName, TrinketEntry.serialize(trinkets, player.registryAccess())));
+            }
         } catch (Exception e) {
             ModInit.LOGGER.error("Error when try save items to offline player: {}", e.getMessage());
         }
@@ -235,30 +260,21 @@ public class InventoryGui extends SimpleGui {
     }
 
     public static void backUpPlayerItemsToChest(Map<Integer, ItemStack> itemStackMap, String playerName, ServerPlayer operatorPlayer){
-        List<Integer> toRemove = new ArrayList<>();
+        backUpPlayerItemsToChest(itemStackMap, List.of(), playerName, operatorPlayer);
+    }
 
-        itemStackMap.forEach((index, item) -> {
-            if (item.getItem() == Items.AIR) {
-                toRemove.add(index);
-            }
-        });
+    public static void backUpPlayerItemsToChest(Map<Integer, ItemStack> itemStackMap, List<ItemStack> extraItems, String playerName, ServerPlayer operatorPlayer){
+        List<ItemStack> list = new ArrayList<>();
+        itemStackMap.values().stream().filter(item -> !item.isEmpty()).forEach(list::add);
+        extraItems.stream().filter(item -> !item.isEmpty()).forEach(list::add);
 
-        toRemove.forEach(itemStackMap::remove);
+        String[] chestNames = {"first", "second", "third"};
+        for (int chestIndex = 0; chestIndex * 27 < Math.max(list.size(), 1); chestIndex++) {
+            List<ItemStack> chestItems = list.subList(chestIndex * 27, Math.min((chestIndex + 1) * 27, list.size()));
+            String chestName = chestIndex < chestNames.length ? chestNames[chestIndex] : String.valueOf(chestIndex + 1);
 
-        List<ItemStack> list = itemStackMap.values().stream().toList();
-
-        ItemStack chest;
-
-        if(itemStackMap.size() > 27){
-
-            chest = createChestItem(list.subList(27, list.size()), playerName+" second inventory", operatorPlayer);
-
-            operatorPlayer.drop(chest, false, true);
+            operatorPlayer.drop(createChestItem(chestItems, playerName + " " + chestName + " inventory", operatorPlayer), false, true);
         }
-
-        chest = createChestItem(list.subList(0, Math.min(27, list.size())), playerName+" first inventory", operatorPlayer);
-
-        operatorPlayer.drop(chest, false, true);
     }
 
     public static ItemStack createChestItem(List<ItemStack> items, String name, ServerPlayer operatorPlayer) {

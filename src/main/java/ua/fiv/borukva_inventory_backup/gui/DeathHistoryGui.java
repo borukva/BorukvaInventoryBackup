@@ -51,6 +51,7 @@ public class DeathHistoryGui extends SimpleGui {
             String armor = this.deathTableList.get(tableSize-i-1).getArmor();
             String offHand = this.deathTableList.get(tableSize-i-1).getOffHand();
             String enderChest = this.deathTableList.get(tableSize-i-1).getEnderChest();
+            String trinkets = this.deathTableList.get(tableSize-i-1).getTrinkets();
 
             int xp = this.deathTableList.get(tableSize-i-1).getXp();
 
@@ -67,7 +68,7 @@ public class DeathHistoryGui extends SimpleGui {
                             ModInit.LOGGER.error("Can't create InventoryGUI because itemStackList is null");
                             return;
                         }
-                        new InventoryGui(player, this.deathTableList.getFirst().getName(), itemStackList, enderChest, xp, this).open();
+                        new InventoryGui(player, this.deathTableList.getFirst().getName(), itemStackList, enderChest, trinkets, xp, this).open();
                     })
                     .build());
 

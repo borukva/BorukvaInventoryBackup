@@ -19,5 +19,7 @@ public class OnPlayerLoginMixin {
                                     CommonListenerCookie clientData, CallbackInfo ci){
         ModInit.getDatabaseManagerActor().tell(
                 new BActorMessages.SavePlayerDataOnPlayerConnect(PlayerSnapshot.capture(player)));
+        ModInit.getDatabaseManagerActor().tell(
+                new BActorMessages.ApplyPendingTrinkets(player.level().getServer(), player.getName().getString()));
     }
 }

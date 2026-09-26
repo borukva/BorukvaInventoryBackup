@@ -81,7 +81,8 @@ public class EnderChestGui extends SimpleGui {
                 "[]",
                 playerItems(player.getEnderChestInventory().getItems(), player).toString(),
                 false,
-                0
+                0,
+                null
         );
 
         enderChestInventory.clearContent();
@@ -109,7 +110,8 @@ public class EnderChestGui extends SimpleGui {
                     "[]",
                     OfflineInventorySnapshot.normalizeSlottedContainer(inventoryList, 27),
                     false,
-                    0
+                    0,
+                    null
             );
 
 

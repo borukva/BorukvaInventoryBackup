@@ -31,6 +31,6 @@
 		"kotori_scala": "*"
 	},
 	"suggests": {
-		"another-mod": "*"
+		"trinkets": "*"
 	}
 }

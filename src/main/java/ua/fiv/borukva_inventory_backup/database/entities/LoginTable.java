@@ -19,8 +19,8 @@ public class LoginTable extends BaseEntity {
     @DatabaseField(dataType = DataType.STRING)
     private String place;
 
-    public LoginTable(String name, String world, String place, String date, String inventory, String armor, String offHand, String enderChest, int xp) {
-        super(name, date, inventory, armor, offHand, enderChest, xp);
+    public LoginTable(String name, String world, String place, String date, String inventory, String armor, String offHand, String enderChest, int xp, String trinkets) {
+        super(name, date, inventory, armor, offHand, enderChest, xp, trinkets);
         this.world = world;
         this.place = place;
     }

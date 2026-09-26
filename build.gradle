@@ -46,6 +46,9 @@ dependencies {
 	include (implementation "org.scala-lang.modules:scala-java8-compat_2.13:1.0.2")
 
 	implementation include("eu.pb4:sgui:2.1.0+26.2")
+
+	// Optional: trinket slots are backed up only when Trinkets is installed
+	compileOnly "eu.pb4:trinkets:${project.trinkets_version}"
 	include(implementation('me.lucko:fabric-permissions-api:0.7.0'))
 
 	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"

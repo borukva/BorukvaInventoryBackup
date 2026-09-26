@@ -16,8 +16,11 @@ import ua.fiv.borukva_inventory_backup.database.BorukvaInventoryBackupDB;
 import ua.fiv.borukva_inventory_backup.database.entities.DeathTable;
 import ua.fiv.borukva_inventory_backup.database.entities.LoginTable;
 import ua.fiv.borukva_inventory_backup.database.entities.LogoutTable;
+import ua.fiv.borukva_inventory_backup.database.entities.PendingTrinketsTable;
 import ua.fiv.borukva_inventory_backup.database.entities.PreRestoreTable;
+import ua.fiv.borukva_inventory_backup.compat.TrinketsCompat;
 import ua.fiv.borukva_inventory_backup.gui.*;
+import ua.fiv.borukva_inventory_backup.util.TrinketEntry;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -44,6 +47,9 @@ public class DatabaseManagerActor extends AbstractBehavior<BActorMessages.Comman
                 .onMessage(BActorMessages.SavePlayerDataOnPlayerConnect.class, this::onPlayerConnect)
                 .onMessage(BActorMessages.SavePlayerDataOnPlayerLogout.class, this::onPlayerLogout)
                 .onMessage(BActorMessages.SavePlayerDataOnPlayerRestore.class, this::onPlayerRestore)
+                .onMessage(BActorMessages.SavePendingTrinkets.class, this::savePendingTrinkets)
+                .onMessage(BActorMessages.ApplyPendingTrinkets.class, this::applyPendingTrinkets)
+                .onMessage(BActorMessages.DeletePendingTrinkets.class, this::deletePendingTrinkets)
                 .onMessage(BActorMessages.GetInventoryHistory.class, this::getInventoryHistory)
                 .onMessage(BActorMessages.GetDeathTableMap.class, this::getDeathTableMap)
                 .onMessage(BActorMessages.GetLogoutTableMap.class, this::getLogoutTableMap)
@@ -84,7 +90,7 @@ public class DatabaseManagerActor extends AbstractBehavior<BActorMessages.Comman
             borukvaInventoryBackupDB.addDataDeath(
                     snapshot.name(), snapshot.world(), snapshot.place(), formattedTime,
                     msg.deathReason(), snapshot.inventory(), snapshot.armor(), snapshot.offHand(),
-                    snapshot.enderChest(), snapshot.xp()
+                    snapshot.enderChest(), snapshot.xp(), snapshot.trinkets()
             );
         } catch (SQLException e) {
             throw new SQLExceptionWrapper(e);
@@ -100,7 +106,7 @@ public class DatabaseManagerActor extends AbstractBehavior<BActorMessages.Comman
             borukvaInventoryBackupDB.addDataLogin(
                     snapshot.name(), snapshot.world(), snapshot.place(), formattedTime,
                     snapshot.inventory(), snapshot.armor(), snapshot.offHand(),
-                    snapshot.enderChest(), snapshot.xp()
+                    snapshot.enderChest(), snapshot.xp(), snapshot.trinkets()
             );
         } catch (SQLException e) {
             throw new SQLExceptionWrapper(e);
@@ -116,7 +122,7 @@ public class DatabaseManagerActor extends AbstractBehavior<BActorMessages.Comman
             borukvaInventoryBackupDB.addDataLogout(
                     snapshot.name(), snapshot.world(), snapshot.place(), formattedTime,
                     snapshot.inventory(), snapshot.armor(), snapshot.offHand(),
-                    snapshot.enderChest(), snapshot.xp()
+                    snapshot.enderChest(), snapshot.xp(), snapshot.trinkets()
             );
         } catch (SQLException e) {
             throw new SQLExceptionWrapper(e);
@@ -127,7 +133,58 @@ public class DatabaseManagerActor extends AbstractBehavior<BActorMessages.Comman
     private Behavior<BActorMessages.Command> onPlayerRestore(BActorMessages.SavePlayerDataOnPlayerRestore msg) {
         String formattedTime = LocalDateTime.now().toString().replace("T", " ").split("\\.")[0];
         try {
-            borukvaInventoryBackupDB.addDataPreRestore(msg.playerName(), formattedTime, msg.inventory(), msg.armor(), msg.offHand(), msg.enderChest(), msg.isInventory(), msg.xp());
+            borukvaInventoryBackupDB.addDataPreRestore(msg.playerName(), formattedTime, msg.inventory(), msg.armor(), msg.offHand(), msg.enderChest(), msg.isInventory(), msg.xp(), msg.trinkets());
+        } catch (SQLException e) {
+            throw new SQLExceptionWrapper(e);
+        }
+        return this;
+    }
+
+    private Behavior<BActorMessages.Command> savePendingTrinkets(BActorMessages.SavePendingTrinkets msg) {
+        String formattedTime = LocalDateTime.now().toString().replace("T", " ").split("\\.")[0];
+        try {
+            borukvaInventoryBackupDB.setPendingTrinkets(msg.playerName(), formattedTime, msg.trinkets());
+        } catch (SQLException e) {
+            throw new SQLExceptionWrapper(e);
+        }
+        return this;
+    }
+
+    private Behavior<BActorMessages.Command> applyPendingTrinkets(BActorMessages.ApplyPendingTrinkets msg) {
+        PendingTrinketsTable pending;
+        try {
+            pending = borukvaInventoryBackupDB.getPendingTrinkets(msg.playerName());
+        } catch (SQLException e) {
+            throw new SQLExceptionWrapper(e);
+        }
+        if (pending == null) {
+            return this;
+        }
+
+        // The record is deleted only once the trinkets are on the player, so a
+        // player who leaves in between gets them on the next login instead.
+        executeOnServer(msg.server(), () -> {
+            ServerPlayer player = msg.server().getPlayerList().getPlayer(msg.playerName());
+            if (player == null) {
+                return;
+            }
+            List<TrinketEntry> entries = TrinketEntry.parse(pending.getTrinkets(), player.registryAccess());
+            if (entries != null) {
+                PlayerSnapshot snapshot = PlayerSnapshot.capture(player);
+                ModInit.getDatabaseManagerActor().tell(new BActorMessages.SavePlayerDataOnPlayerRestore(
+                        snapshot.name(), snapshot.inventory(), snapshot.armor(), snapshot.offHand(),
+                        snapshot.enderChest(), true, snapshot.xp(), snapshot.trinkets()));
+                TrinketsCompat.restore(player, entries);
+                ModInit.LOGGER.info("Restored {} pending trinket(s) to {}", entries.size(), msg.playerName());
+            }
+            ModInit.getDatabaseManagerActor().tell(new BActorMessages.DeletePendingTrinkets(pending.getId()));
+        });
+        return this;
+    }
+
+    private Behavior<BActorMessages.Command> deletePendingTrinkets(BActorMessages.DeletePendingTrinkets msg) {
+        try {
+            borukvaInventoryBackupDB.deletePendingTrinkets(msg.id());
         } catch (SQLException e) {
             throw new SQLExceptionWrapper(e);
         }

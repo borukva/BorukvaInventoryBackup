@@ -2,6 +2,7 @@ package ua.fiv.borukva_inventory_backup.actor;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
+import ua.fiv.borukva_inventory_backup.compat.TrinketsCompat;
 import ua.fiv.borukva_inventory_backup.gui.InventoryGui;
 
 import java.util.List;
@@ -15,7 +16,8 @@ public record PlayerSnapshot(
         String armor,
         String offHand,
         String enderChest,
-        int xp
+        int xp,
+        String trinkets
 ) {
     public static PlayerSnapshot capture(ServerPlayer player) {
         List<ItemStack> armor = List.of(
@@ -33,7 +35,8 @@ public record PlayerSnapshot(
                 InventoryGui.playerItems(armor, player).toString(),
                 InventoryGui.playerItems(List.of(player.getOffhandItem()), player).toString(),
                 InventoryGui.playerItems(player.getEnderChestInventory().getItems(), player).toString(),
-                player.experienceLevel
+                player.experienceLevel,
+                TrinketsCompat.capture(player)
         );
     }
 }

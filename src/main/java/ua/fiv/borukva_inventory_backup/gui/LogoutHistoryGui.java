@@ -49,6 +49,7 @@ public class LogoutHistoryGui extends SimpleGui {
             String armor = this.logoutTableList.get(tableSize-i-1).getArmor();
             String offHand = this.logoutTableList.get(tableSize-i-1).getOffHand();
             String enderChest = this.logoutTableList.get(tableSize-i-1).getEnderChest();
+            String trinkets = this.logoutTableList.get(tableSize-i-1).getTrinkets();
 
             int xp = this.logoutTableList.get(tableSize-i-1).getXp();
             this.setSlot(inventory_index, new GuiElementBuilder(Items.CHEST)
@@ -64,7 +65,7 @@ public class LogoutHistoryGui extends SimpleGui {
                             return;
                         }
 
-                        new InventoryGui(player, this.logoutTableList.getFirst().getName(), itemStackList, enderChest, xp, this).open();
+                        new InventoryGui(player, this.logoutTableList.getFirst().getName(), itemStackList, enderChest, trinkets, xp, this).open();
                     })
                     .build());
 

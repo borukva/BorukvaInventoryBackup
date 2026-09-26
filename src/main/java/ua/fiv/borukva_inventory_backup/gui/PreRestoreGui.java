@@ -49,6 +49,7 @@ public class PreRestoreGui extends SimpleGui {
             String armor = this.preRestoreTableList.get(tableSize-i-1).getArmor();
             String offHand = this.preRestoreTableList.get(tableSize-i-1).getOffHand();
             String enderChest = this.preRestoreTableList.get(tableSize-i-1).getEnderChest();
+            String trinkets = this.preRestoreTableList.get(tableSize-i-1).getTrinkets();
 
             int xp = this.preRestoreTableList.get(tableSize-i-1).getXp();
             boolean isInventory = this.preRestoreTableList.get(tableSize-i-1).isTableType();
@@ -60,7 +61,7 @@ public class PreRestoreGui extends SimpleGui {
                         Map<Integer, ItemStack> itemStackList = TableListGui.inventorySerialization(inventory, armor, offHand, player);
 
                         if(isInventory){
-                            new InventoryGui(player, this.preRestoreTableList.getFirst().getName(), itemStackList, enderChest,xp, this).open();
+                            new InventoryGui(player, this.preRestoreTableList.getFirst().getName(), itemStackList, enderChest, trinkets, xp, this).open();
                         } else {
                             new EnderChestGui(player, this.preRestoreTableList.getFirst().getName(), enderChest, this).open();
                         }

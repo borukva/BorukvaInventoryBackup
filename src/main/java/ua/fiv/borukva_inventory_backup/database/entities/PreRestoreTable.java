@@ -16,8 +16,8 @@ public class PreRestoreTable extends BaseEntity {
     @DatabaseField(dataType = DataType.BOOLEAN)
     private boolean tableType;
 
-    public PreRestoreTable(String name, String date, String inventory, String armor, String offHand, String enderChest, boolean tableType,int xp) {
-        super(name, date, inventory, armor, offHand, enderChest, xp);
+    public PreRestoreTable(String name, String date, String inventory, String armor, String offHand, String enderChest, boolean tableType,int xp, String trinkets) {
+        super(name, date, inventory, armor, offHand, enderChest, xp, trinkets);
         this.tableType = tableType;
     }
 }

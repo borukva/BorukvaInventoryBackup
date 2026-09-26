@@ -31,3 +31,11 @@ Source baseline: `master` at `e768075` (Minecraft 1.21.10).
 - Restores Ender Chest snapshots to online or offline players.
 - Creates a pre-restore snapshot before either kind of destructive recovery so the previous state can be recovered.
 - Exports a snapshot into one or two named chest items, preserving contained item stacks and components.
+
+## Trinkets (optional)
+
+- When Trinkets Updated is installed, every snapshot also stores equipped trinkets with their slot id and index; older records without trinket data leave trinket slots untouched on restore.
+- Adds the `trinkets` column to existing tables on startup (H2 and MySQL).
+- Shows a snapshot's trinkets from the inventory screen and includes them in chest exports.
+- Restores trinkets to online players directly; items whose slot no longer exists go to the player's inventory.
+- Queues trinkets restored to offline players and puts them on at the next login.

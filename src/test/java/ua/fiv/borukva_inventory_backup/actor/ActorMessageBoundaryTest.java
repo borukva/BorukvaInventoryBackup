@@ -17,6 +17,8 @@ class ActorMessageBoundaryTest {
         assertDetached(BActorMessages.SavePlayerDataOnPlayerConnect.class);
         assertDetached(BActorMessages.SavePlayerDataOnPlayerLogout.class);
         assertDetached(BActorMessages.SavePlayerDataOnPlayerRestore.class);
+        assertDetached(BActorMessages.SavePendingTrinkets.class);
+        assertDetached(BActorMessages.ApplyPendingTrinkets.class);
 
         Set<Class<?>> snapshotTypes = Set.of(String.class, int.class);
         for (RecordComponent component : PlayerSnapshot.class.getRecordComponents()) {
