@@ -12,9 +12,8 @@ import java.util.List;
 
 /**
  * Direct Trinkets API calls. Must only be reached through {@link TrinketsCompat}.
- * Built against the Trinkets Updated release running on the server, which has
- * no cosmetic slots yet; entries are still marked {@code cosmetic} in the
- * stored format so newer releases can be supported without migrating data.
+ * Cosmetic slots only exist when the slot type supports them and the server
+ * has them enabled; otherwise cosmetic entries fall back to the inventory.
  */
 final class TrinketsAccess {
     private TrinketsAccess() {}
@@ -29,6 +28,10 @@ final class TrinketsAccess {
                 if (!stack.isEmpty()) {
                     entries.add(new TrinketEntry(slot, index, false, stack));
                 }
+                ItemStack cosmetic = inventory.getCosmeticItem(index);
+                if (!cosmetic.isEmpty()) {
+                    entries.add(new TrinketEntry(slot, index, true, cosmetic));
+                }
             }
         }
 
@@ -41,6 +44,7 @@ final class TrinketsAccess {
         for (TrinketInventory inventory : attachment.getInventories().values()) {
             for (int index = 0; index < inventory.getContainerSize(); index++) {
                 inventory.setItem(index, ItemStack.EMPTY);
+                inventory.setCosmeticItem(index, ItemStack.EMPTY);
             }
         }
 
@@ -54,8 +58,15 @@ final class TrinketsAccess {
     }
 
     private static boolean place(TrinketInventory inventory, TrinketEntry entry) {
-        if (entry.cosmetic() || inventory == null || !inventory.isValidSlot(entry.index())
-                || entry.index() >= inventory.getContainerSize() || !inventory.getItem(entry.index()).isEmpty()) {
+        if (inventory == null || !inventory.isValidSlot(entry.index())
+                || entry.index() >= inventory.getContainerSize()) {
+            return false;
+        }
+        if (entry.cosmetic()) {
+            return inventory.getCosmeticItem(entry.index()).isEmpty()
+                    && inventory.setCosmeticItem(entry.index(), entry.stack().copy());
+        }
+        if (!inventory.getItem(entry.index()).isEmpty()) {
             return false;
         }
         inventory.setItem(entry.index(), entry.stack().copy());

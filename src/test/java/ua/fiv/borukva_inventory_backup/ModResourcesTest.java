@@ -36,7 +36,7 @@ class ModResourcesTest {
         }
 
         assertEquals("borukva_inventory_backup", metadata.get("id").getAsString());
-        assertEquals("0.5.0+26.2", metadata.get("version").getAsString());
+        assertEquals("0.5.1+26.2", metadata.get("version").getAsString());
         assertEquals("*", metadata.get("environment").getAsString());
         assertEquals(
                 "ua.fiv.borukva_inventory_backup.ModInit",
