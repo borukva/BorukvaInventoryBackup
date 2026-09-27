@@ -34,8 +34,8 @@ Source baseline: `master` at `e768075` (Minecraft 1.21.10).
 
 ## Trinkets (optional)
 
-- When Trinkets Updated is installed, every snapshot also stores equipped trinkets with their slot id and index; older records without trinket data leave trinket slots untouched on restore.
+- When Trinkets Updated is installed, every snapshot also stores equipped trinkets, including cosmetic slots, with their slot id and index; older records without trinket data leave trinket slots untouched on restore.
 - Adds the `trinkets` column to existing tables on startup (H2 and MySQL).
 - Shows a snapshot's trinkets from the inventory screen and includes them in chest exports.
-- Restores trinkets to online players directly; items whose slot no longer exists go to the player's inventory.
+- Restores trinkets to online players directly; items whose slot no longer exists (or cosmetic items when cosmetic slots are disabled) go to the player's inventory.
 - Queues trinkets restored to offline players and puts them on at the next login.
